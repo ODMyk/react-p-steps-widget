@@ -102,7 +102,9 @@ function App() {
 
   return (
     <>
-      <StepsWidget data={data} columnsCount={columsCount} changeColumnsCount={changeColumnsCount} />
+      <div className='wrapper'>
+        <StepsWidget data={data} columnsCount={columsCount} changeColumnsCount={changeColumnsCount} />
+      </div>
     </>
   )
 }
