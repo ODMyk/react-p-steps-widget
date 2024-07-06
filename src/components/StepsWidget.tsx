@@ -10,15 +10,19 @@ interface StepsWidgetProps {
 }
 
 export default function StepsWidget({ data, columnsCount = 12, stepsGoal = 8000, changeColumnsCount }: StepsWidgetProps) {
+    const isSameDay = (a: Date, b: Date) => {
+        return a.getUTCDate() === b.getUTCDate() && a.getUTCMonth() === b.getUTCMonth() && a.getUTCFullYear() === b.getUTCFullYear();
+    }
+
     const OFFSET = new Date().getTimezoneOffset() * 60000;
     const HOURS_IN_PERIOD = 24 / columnsCount;
     const PERIOD_LENGTH = HOURS_IN_PERIOD * 3600000;
-    const stepsCount = useMemo(() => data.map(period => period.steps).reduce((prev, cur) => prev + cur, 0), [data]);
+    const currentDate = new Date();
+    const sortedData = data.map((period) => ({ start: new Date(Date.parse(period.startTime) + OFFSET), end: new Date(Date.parse(period.endTime) + OFFSET), steps: period.steps })).filter((p) => isSameDay(currentDate, new Date(p.start))).sort((a, b) => a.start.getTime() - b.start.getTime())
+    const stepsCount = useMemo(() => sortedData.map(period => period.steps).reduce((prev, cur) => prev + cur, 0), [data]);
     const percentage = useMemo(() => Math.floor(stepsCount * 100 / stepsGoal), [data, stepsGoal]);
     const supremum = stepsGoal / 4;
-    const currentDate = new Date();
     const nextDate = new Date(currentDate.getTime());
-    const sortedData = data.map((period) => ({ start: new Date(Date.parse(period.startTime) + OFFSET), end: new Date(Date.parse(period.endTime) + OFFSET), steps: period.steps })).sort((a, b) => a.start.getTime() - b.start.getTime())
     const hour = currentDate.getHours();
     currentDate.setHours(0);
     currentDate.setMinutes(0);
