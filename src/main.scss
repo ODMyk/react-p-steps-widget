@@ -20,18 +20,18 @@ $secondary: #eee;
     border-radius: 20px;
     max-width: 600px;
     display: grid;
-    gap: 20px;
+    gap: 10px;
     grid-template-columns: repeat(8, 1fr);
     grid-template-areas:
         "header . . . . . . ."
-        ". . . . . . . ."
         ". . . chart chart chart chart ."
         ". . . chart chart chart chart ."
         ". . . chart chart chart chart ."
         "steps steps steps chart chart chart chart ."
         "bar bar bar bar bar bar bar bar"
         "bar bar bar bar bar bar bar bar"
-        "button button . . . . info info";
+        "slider slider slider slider slider slider slider slider"
+        ". . . sliderinfo sliderinfo . info info";
 
     h3 {
         color: $primary;
@@ -42,104 +42,10 @@ $secondary: #eee;
     p {
         grid-area: steps;
         font-size: 1.5rem;
-        align-self: start;
 
         span {
             font-size: 0.75rem;
         }
-    }
-
-    .stepsChart {
-        grid-area: chart;
-        display: grid;
-
-        display: grid;
-        height: 100%;
-        width: 100%;
-        align-items: flex-end;
-    }
-
-    .stepsChart-12 {
-        @extend .stepsChart;
-
-        grid-template-columns: repeat(12, 1fr);
-        gap: 8px;
-    }
-
-    .stepsChart-24 {
-        @extend .stepsChart;
-
-
-        grid-template-columns: repeat(24, 1fr);
-        gap: 4px;
-
-        .chartColumn {
-            div {
-                * {
-                    left: -4px;
-                }
-            }
-        }
-    }
-
-    @media screen and (max-width: 500px) {
-        .stepsChart-12 {
-            gap: 4px;
-
-            .chartColumn {
-                div {
-                    * {}
-                }
-            }
-        }
-
-        h3 {
-            font-size: 0.5rem;
-        }
-    }
-
-    .chartColumn {
-        background-color: $primary;
-        width: 100%;
-        border-radius: 5px;
-        overflow: hidden;
-
-        div {
-            position: absolute;
-            text-align: center;
-
-            * {
-                position: relative;
-                top: -20px;
-                font-size: 0.7rem;
-            }
-        }
-    }
-
-    .chartColumn-inactive {
-        @extend .chartColumn;
-
-        background-color: $secondary;
-    }
-
-    .progressBar {
-        grid-area: bar;
-        background-color: $secondary;
-    }
-
-    button {
-        grid-area: button;
-        cursor: pointer;
-        padding: 10px 0 10px 0;
-        background-color: $primary;
-        color: #fff;
-        font-size: 0.75rem;
-        border-radius: 16px;
-        border: 0;
-    }
-
-    button:hover {
-        background-color: lighten($primary, 3);
     }
 
     small {
@@ -148,6 +54,39 @@ $secondary: #eee;
         align-self: center;
         font-size: 0.7rem;
     }
+}
+
+.stepsChart {
+    grid-area: chart;
+    display: grid;
+    gap: 1px;
+
+    height: 100%;
+    width: 100%;
+    align-items: flex-end;
+    justify-items: center;
+}
+
+.chartColumn {
+    background-color: $primary;
+    border-radius: 5px;
+    width: 5px;
+    overflow: hidden;
+}
+
+.chartColumn-inactive {
+    @extend .chartColumn;
+
+    background-color: $secondary;
+}
+
+.current {
+    background-color: #e27b1a;
+}
+
+.progressBar {
+    grid-area: bar;
+    background-color: $secondary;
 }
 
 .progressBar {
@@ -165,16 +104,6 @@ $secondary: #eee;
         div {
             position: absolute;
             height: 50px;
-
-            span {
-                position: relative;
-                left: 40px;
-                color: #667770;
-                font-weight: bold;
-                align-self: center;
-                justify-self: flex-end;
-                font-size: 0.75rem;
-            }
         }
 
     }
@@ -185,4 +114,30 @@ $secondary: #eee;
         font-size: 0.75rem;
         padding-left: 16px;
     }
+}
+
+.slider {
+    grid-area: slider;
+}
+
+.slider_info {
+    grid-area: sliderinfo;
+    font-size: 0.8rem;
+    align-self: center;
+    justify-self: center;
+}
+
+.progressText {
+    position: relative;
+    left: 40px;
+    color: #667770;
+    font-weight: bold;
+    align-self: center;
+    justify-self: flex-end;
+    font-size: 0.75rem;
+}
+
+.left {
+    left: -20px;
+    color: #fff;
 }

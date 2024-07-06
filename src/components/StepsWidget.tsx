@@ -1,101 +1,80 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { WalkingPeriod } from "../types/WalkingPeriod";
 import { MapPin } from "lucide-react";
 
 interface StepsWidgetProps {
     data: WalkingPeriod[];
-    columnsCount?: 12 | 24;
     stepsGoal?: number;
-    changeColumnsCount: () => void;
 }
 
-export default function StepsWidget({ data, columnsCount = 12, stepsGoal = 8000, changeColumnsCount }: StepsWidgetProps) {
+export default function StepsWidget({ data, stepsGoal = 8000 }: StepsWidgetProps) {
     const isSameDay = (a: Date, b: Date) => {
-        return a.getUTCDate() === b.getUTCDate() && a.getUTCMonth() === b.getUTCMonth() && a.getUTCFullYear() === b.getUTCFullYear();
+        return a.getDate() === b.getDate() && a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear();
     }
 
-    const OFFSET = new Date().getTimezoneOffset() * 60000;
-    const HOURS_IN_PERIOD = 24 / columnsCount;
-    const PERIOD_LENGTH = HOURS_IN_PERIOD * 3600000;
+    const [columnsCount, setColumnsCount] = useState(12);
+
     const currentDate = new Date();
-    const sortedData = data.map((period) => ({ start: new Date(Date.parse(period.startTime) + OFFSET), end: new Date(Date.parse(period.endTime) + OFFSET), steps: period.steps })).filter((p) => isSameDay(currentDate, new Date(p.start))).sort((a, b) => a.start.getTime() - b.start.getTime())
-    const stepsCount = useMemo(() => sortedData.map(period => period.steps).reduce((prev, cur) => prev + cur, 0), [data]);
+    const OFFSET = currentDate.getTimezoneOffset() * 60000;
+    const PERIOD_LENGTH = 24 / columnsCount * 3600000;
+
+    const dayStart = new Date(currentDate).setHours(0, 0, 0, 0);
+    const filteredData = data.map((period) => ({
+        start: new Date(Date.parse(period.startTime) + OFFSET),
+        end: new Date(Date.parse(period.endTime) + OFFSET),
+        steps: period.steps
+    }))
+        .filter((p) => isSameDay(currentDate, p.start));
+    const stepsCount = useMemo(() => filteredData.map(period => period.steps).reduce((prev, cur) => prev + cur, 0), [data]);
     const percentage = useMemo(() => Math.floor(stepsCount * 100 / stepsGoal), [data, stepsGoal]);
-    const supremum = stepsGoal / 4;
-    const nextDate = new Date(currentDate.getTime());
-    const hour = currentDate.getHours();
-    currentDate.setHours(0);
-    currentDate.setMinutes(0);
-    currentDate.setSeconds(0);
-    currentDate.setMilliseconds(0);
 
-    let lastIndex = 0;
-    const periods = [];
-    for (let i = 0; i < columnsCount; ++i) {
-        periods.push(0);
-    }
+    const currentPeriod = Math.trunc((currentDate.getTime() - dayStart) / PERIOD_LENGTH);
+    const periods = Array.from({ length: columnsCount }).map((_, index) => {
+        return filteredData.reduce((acc, period) => {
+            const startIndex = Math.trunc((period.start.getTime() - dayStart) / PERIOD_LENGTH);
+            const endIndex = Math.trunc((period.end.getTime() - dayStart) / PERIOD_LENGTH);
 
-    for (let i = 0, j = 0; i < columnsCount; ++i) {
-        currentDate.setHours(i * HOURS_IN_PERIOD);
-        nextDate.setTime(currentDate.getTime() + (3.6e+6 * Math.round(HOURS_IN_PERIOD)))
-        nextDate.setSeconds(0);
-        nextDate.setMinutes(0);
-        nextDate.setMilliseconds(0);
-        if (currentDate.getHours() <= hour && hour < nextDate.getHours()) {
-            lastIndex = i;
-        }
-
-        while (j < sortedData.length && sortedData[j].start.getTime() >= currentDate.getTime() && sortedData[j].start.getTime() < nextDate.getTime()) {
-            let steps = sortedData[j].steps;
-            let increment = true;
-            if (sortedData[j].end.getTime() >= nextDate.getTime()) {
-                increment = false;
-                const numerator = nextDate.getTime() - sortedData[j].start.getTime();
-                steps = Math.round(steps * (numerator) / PERIOD_LENGTH);
-                sortedData[j].start.setTime(nextDate.getTime());
-                sortedData[j].steps -= steps;
+            if (startIndex === endIndex && startIndex === index) {
+                return acc + period.steps;
             }
-            periods[i] += steps;
-            if (increment) {
-                ++j;
+            if (index === startIndex) {
+                return acc + Math.trunc(period.steps * ((dayStart + (index + 1) * PERIOD_LENGTH - period.start.getTime()) / PERIOD_LENGTH));
             }
-        }
+            if (index === endIndex) {
+                return acc + Math.trunc(period.steps * ((period.end.getTime() - dayStart - index * PERIOD_LENGTH) / PERIOD_LENGTH));
+            }
 
-    }
-
-    const styles: React.CSSProperties = {};
-    if (percentage > 92) {
-        styles["left"] = "-20px";
-        styles["color"] = "white";
-    }
+            return acc;
+        }, 0)
+    });
+    const supremum = Math.max(...periods);
 
     return (
         <>
             <div className="stepsContainer">
                 <h3>Steps</h3>
                 <p>{stepsCount}<span> /{stepsGoal} steps</span></p>
-                <div className={`stepsChart-${columnsCount}`}>
+                <div className="stepsChart" style={{ gridTemplateColumns: `repeat(${columnsCount}, 1fr)` }}>
 
                     {periods.map((val, index) => (
-                        <div className={val > 0 ? "chartColumn" : "chartColumn-inactive"} style={{ height: `${Math.min(Math.max(val * 100 / supremum, 8), 100)}%` }} key={index}>
-                            {index === lastIndex && <div><MapPin size={16} /></div>}
-
-                        </div>
+                        <div
+                            className={(val > 0 ? "chartColumn" : "chartColumn-inactive") + (index === currentPeriod ? " current" : "")}
+                            style={{ height: `${Math.min(Math.max(val / supremum * 100, 10), 100)}%` }}
+                            key={index}
+                        />
                     ))}
                 </div>
                 <div className="progressBar">
                     <div style={{ width: `${Math.min(percentage, 100)}%` }}>
                         <div>
-                            {percentage > 90 && <span style={styles}>
+                            <span className={"progressText" + (percentage >= 92 ? " left" : "")}>
                                 {percentage}%
-                            </span>}
-                            {percentage <= 90 && <span>
-                                {percentage}%
-                            </span>}
+                            </span>
                         </div>
                     </div>
                 </div>
-                <button onClick={changeColumnsCount}>Change columns count</button>
+                <input type="range" className="slider" min={1} max={48} value={columnsCount} onChange={({ target }) => setColumnsCount(Math.round(Number(target.value)))} />
+                <span className="slider_info">Columns count: {columnsCount}</span>
                 <small>Steps Now</small>
             </div>
         </>

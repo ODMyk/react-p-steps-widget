@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import StepsWidget from './components/StepsWidget';
 import './main.scss'
 import { WalkingPeriod } from './types/WalkingPeriod';
@@ -63,23 +62,23 @@ function App() {
     {
       "startTime": "2024-07-06T12:06:50.000Z",
       "endTime": "2024-07-06T12:53:50.000Z",
-      "steps": 5400
+      "steps": 208
     },
-    // {
-    //   "startTime": "2024-07-06T13:25:01.000Z",
-    //   "endTime": "2024-07-06T14:03:01.000Z",
-    //   "steps": 275
-    // },
-    // {
-    //   "startTime": "2024-07-06T14:15:38.000Z",
-    //   "endTime": "2024-07-06T14:42:38.000Z",
-    //   "steps": 381
-    // },
-    // {
-    //   "startTime": "2024-07-06T14:53:01.000Z",
-    //   "endTime": "2024-07-06T15:36:01.000Z",
-    //   "steps": 113
-    // },
+    {
+      "startTime": "2024-07-06T13:25:01.000Z",
+      "endTime": "2024-07-06T14:03:01.000Z",
+      "steps": 275
+    },
+    {
+      "startTime": "2024-07-06T14:15:38.000Z",
+      "endTime": "2024-07-06T14:42:38.000Z",
+      "steps": 381
+    },
+    {
+      "startTime": "2024-07-06T14:53:01.000Z",
+      "endTime": "2024-07-06T15:36:01.000Z",
+      "steps": 113
+    },
     // {
     //   "startTime": "2024-07-06T15:59:20.000Z",
     //   "endTime": "2024-07-06T16:36:20.000Z",
@@ -92,18 +91,10 @@ function App() {
     // }
   ];
 
-  const [columsCount, setColumnsCount] = useState<12 | 24>(12);
-
-  const calculateOpposite = (n: 12 | 24) => n === 12 ? 24 : 12;
-
-  const changeColumnsCount = () => {
-    setColumnsCount(prev => calculateOpposite(prev));
-  }
-
   return (
     <>
       <div className='wrapper'>
-        <StepsWidget data={data} columnsCount={columsCount} changeColumnsCount={changeColumnsCount} />
+        <StepsWidget data={data} />
       </div>
     </>
   )
