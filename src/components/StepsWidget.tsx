@@ -63,6 +63,12 @@ export default function StepsWidget({ data, columnsCount = 12, stepsGoal = 8000,
 
     }
 
+    const styles: React.CSSProperties = {};
+    if (percentage > 92) {
+        styles["left"] = "-20px";
+        styles["color"] = "white";
+    }
+
     return (
         <>
             <div className="stepsContainer">
@@ -79,13 +85,15 @@ export default function StepsWidget({ data, columnsCount = 12, stepsGoal = 8000,
                 </div>
                 <div className="progressBar">
                     <div style={{ width: `${Math.min(percentage, 100)}%` }}>
-                        {percentage > 5 && <span>
-                            {percentage}%
-                        </span>}
+                        <div>
+                            {percentage > 90 && <span style={styles}>
+                                {percentage}%
+                            </span>}
+                            {percentage <= 90 && <span>
+                                {percentage}%
+                            </span>}
+                        </div>
                     </div>
-                    {percentage <= 5 && <span>
-                        {percentage}%
-                    </span>}
                 </div>
                 <button onClick={changeColumnsCount}>Change columns count</button>
                 <small>Steps Now</small>
