@@ -19,19 +19,30 @@ export default function StepsWidget({ data, stepsGoal = 8000 }: StepsWidgetProps
     }))
 
     const periods = Array.from({ length: columnsCount }).map((_, index) => {
-        return filteredData.reduce((acc, period) => {
-            const dayStart = new Date(period.start).setHours(0, 0, 0, 0);
-            const startIndex = Math.trunc((period.start.getTime() - dayStart) / PERIOD_LENGTH);
-            const endIndex = Math.trunc((period.end.getTime() - dayStart) / PERIOD_LENGTH);
+        return filteredData.reduce((acc, activityPeriod, j, arr) => {
+            const dayStart = new Date(activityPeriod.start).setHours(0, 0, 0, 0);
+            const startIndex = Math.trunc((activityPeriod.start.getTime() - dayStart) / PERIOD_LENGTH);
+            const endIndex = Math.trunc((activityPeriod.end.getTime() - dayStart) / PERIOD_LENGTH);
+            const duration = activityPeriod.end.getTime() - activityPeriod.start.getTime();
 
             if (startIndex === endIndex && startIndex === index) {
-                return acc + period.steps;
+                return acc + activityPeriod.steps;
             }
+
+            const leftEdge = dayStart + index * PERIOD_LENGTH;
+            const rightEdge = leftEdge + PERIOD_LENGTH;
+
             if (index === startIndex) {
-                return acc + Math.trunc(period.steps * ((dayStart + (index + 1) * PERIOD_LENGTH - period.start.getTime()) / PERIOD_LENGTH));
+                const stepsPart = Math.trunc(activityPeriod.steps * ((rightEdge - activityPeriod.start.getTime()) / duration));
+                arr[j].start = new Date(rightEdge);
+                arr[j].steps -= stepsPart;
+                return acc + stepsPart;
             }
             if (index === endIndex) {
-                return acc + Math.trunc(period.steps * ((period.end.getTime() - dayStart - index * PERIOD_LENGTH) / PERIOD_LENGTH));
+                const stepsPart = Math.trunc(activityPeriod.steps * ((rightEdge - activityPeriod.start.getTime()) / duration));
+                arr[j].end = new Date(leftEdge);
+                arr[j].steps -= stepsPart;
+                return acc + stepsPart;
             }
 
             return acc;
