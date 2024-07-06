@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import { WalkingPeriod } from "../types/WalkingPeriod";
-import { MapPin } from "lucide-react";
 
 interface StepsWidgetProps {
     data: WalkingPeriod[];
