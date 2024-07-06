@@ -7,29 +7,20 @@ interface StepsWidgetProps {
 }
 
 export default function StepsWidget({ data, stepsGoal = 8000 }: StepsWidgetProps) {
-    const isSameDay = (a: Date, b: Date) => {
-        return a.getDate() === b.getDate() && a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear();
-    }
-
     const [columnsCount, setColumnsCount] = useState(12);
 
-    const currentDate = new Date();
-    const OFFSET = currentDate.getTimezoneOffset() * 60000;
+    const OFFSET = new Date().getTimezoneOffset() * 60000;
     const PERIOD_LENGTH = 24 / columnsCount * 3600000;
 
-    const dayStart = new Date(currentDate).setHours(0, 0, 0, 0);
     const filteredData = data.map((period) => ({
         start: new Date(Date.parse(period.startTime) + OFFSET),
         end: new Date(Date.parse(period.endTime) + OFFSET),
         steps: period.steps
     }))
-        .filter((p) => isSameDay(currentDate, p.start));
-    const stepsCount = useMemo(() => filteredData.map(period => period.steps).reduce((prev, cur) => prev + cur, 0), [data]);
-    const percentage = useMemo(() => Math.floor(stepsCount * 100 / stepsGoal), [data, stepsGoal]);
 
-    const currentPeriod = Math.trunc((currentDate.getTime() - dayStart) / PERIOD_LENGTH);
     const periods = Array.from({ length: columnsCount }).map((_, index) => {
         return filteredData.reduce((acc, period) => {
+            const dayStart = new Date(period.start).setHours(0, 0, 0, 0);
             const startIndex = Math.trunc((period.start.getTime() - dayStart) / PERIOD_LENGTH);
             const endIndex = Math.trunc((period.end.getTime() - dayStart) / PERIOD_LENGTH);
 
@@ -46,7 +37,9 @@ export default function StepsWidget({ data, stepsGoal = 8000 }: StepsWidgetProps
             return acc;
         }, 0)
     });
-    const supremum = Math.max(...periods);
+    const supremum = Math.max(...periods, 20);
+    const stepsCount = useMemo(() => periods.reduce((acc, period) => period + acc, 0), [data]);
+    const percentage = useMemo(() => Math.floor(stepsCount * 100 / stepsGoal), [data, stepsGoal]);
 
     return (
         <>
@@ -57,20 +50,21 @@ export default function StepsWidget({ data, stepsGoal = 8000 }: StepsWidgetProps
 
                     {periods.map((val, index) => (
                         <div
-                            className={(val > 0 ? "chartColumn" : "chartColumn-inactive") + (index === currentPeriod ? " current" : "")}
+                            className={(val > 0 ? "chartColumn" : "chartColumn-inactive")}
                             style={{ height: `${Math.min(Math.max(val / supremum * 100, 10), 100)}%` }}
                             key={index}
                         />
                     ))}
                 </div>
                 <div className="progressBar">
-                    <div style={{ width: `${Math.min(percentage, 100)}%` }}>
-                        <div>
-                            <span className={"progressText" + (percentage >= 92 ? " left" : "")}>
-                                {percentage}%
-                            </span>
-                        </div>
+                    <div className={percentage > 92 ? "" : "right"} style={{ width: `${Math.min(percentage, 100)}%` }}>
+                        {percentage > 92 && <span className="progressText left">
+                            {percentage}%
+                        </span>}
                     </div>
+                    {percentage <= 92 && <span className="progressText">
+                        {percentage}%
+                    </span>}
                 </div>
                 <input type="range" className="slider" min={1} max={48} value={columnsCount} onChange={({ target }) => setColumnsCount(Math.round(Number(target.value)))} />
                 <span className="slider_info">Columns count: {columnsCount}</span>

@@ -80,41 +80,31 @@ $secondary: #eee;
     background-color: $secondary;
 }
 
-.current {
-    background-color: #e27b1a;
-}
-
 .progressBar {
     grid-area: bar;
     background-color: $secondary;
 }
 
 .progressBar {
+    display: flex;
     min-height: 50px;
-    display: grid;
-    grid-template-columns: 1fr;
+    color: #667770;
+    font-weight: bold;
+    font-size: 0.75rem;
+    line-height: 100%;
+    align-items: center;
 
     div {
-        display: grid;
-        grid-template-columns: 1fr;
+        display: flex;
+        align-items: center;
+        justify-content: end;
         background-color: $primary;
         height: 100%;
-        justify-items: flex-end;
-
-        div {
-            position: absolute;
-            height: 50px;
-        }
-
+        max-width: 100%;
     }
 
-    span {
-        font-weight: bold;
-        justify-self: flex-start;
-        font-size: 0.75rem;
-        padding-left: 16px;
-    }
 }
+
 
 .slider {
     grid-area: slider;
@@ -123,21 +113,14 @@ $secondary: #eee;
 .slider_info {
     grid-area: sliderinfo;
     font-size: 0.8rem;
-    align-self: center;
     justify-self: center;
 }
 
 .progressText {
-    position: relative;
-    left: 40px;
-    color: #667770;
-    font-weight: bold;
-    align-self: center;
-    justify-self: flex-end;
-    font-size: 0.75rem;
+    padding-left: 10px;
 }
 
 .left {
-    left: -20px;
     color: #fff;
+    transform: translateX(-10px);
 }
